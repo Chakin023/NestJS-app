@@ -8,7 +8,7 @@ export class AppController {
   @Get('/')
   getHomeAPI() {
     return {
-      version: '1.0.0',
+      version: process.env.API_VERSION,
       message: 'NestJS API running...',
     };
   }
