@@ -26,7 +26,7 @@ import { Customer } from './customers/entities/customer.entity';
       database: process.env.DB_DATABASE,
       models: [Customer],
       autoLoadModels: true,
-      sync: {},
+      sync: { force: false, alter: true },
     }),
   ],
   controllers: [AppController],
