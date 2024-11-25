@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { InjectModel } from '@nestjs/sequelize';
@@ -11,23 +11,35 @@ export class CustomersService {
     private readonly customerModel: typeof Customer,
   ) {}
 
-  create(createCustomerDto: CreateCustomerDto) {
-    return createCustomerDto;
+  async create(createCustomerDto: CreateCustomerDto) {
+    return await this.customerModel.create(
+      createCustomerDto as Partial<Customer>,
+    );
   }
 
-  async findAll() {
-    return await this.customerModel.findAll();
+  async findAll(): Promise<Customer[]> {
+    return await this.customerModel.findAll({
+      order: [['id', 'ASC']],
+    });
   }
 
   async findOne(id: number) {
-    return await this.customerModel.findOne({ where: { id: id } });
+    const customer = await this.customerModel.findOne({ where: { id: id } });
+    if (!customer) {
+      throw new NotFoundException(`not found customer with id ${id}`);
+    }
+    return customer;
   }
 
-  update(id: number, updateCustomerDto: UpdateCustomerDto) {
-    return updateCustomerDto;
+  async update(id: number, updateCustomerDto: UpdateCustomerDto) {
+    const [customer] = await this.customerModel.update(updateCustomerDto, {
+      where: { id: id },
+    });
+    return customer;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} customer`;
+  async remove(id: number) {
+    const customer = await this.customerModel.destroy({ where: { id: id } });
+    return customer;
   }
 }

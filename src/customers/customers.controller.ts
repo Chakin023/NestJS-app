@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -19,30 +21,44 @@ export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Post()
-  create(@Body() createCustomerDto: CreateCustomerDto) {
-    return this.customersService.create(createCustomerDto);
+  async create(@Body() createCustomerDto: CreateCustomerDto) {
+    const customer = await this.customersService.create(createCustomerDto);
+    return {
+      data: customer,
+      message: 'add data to database successfully',
+    };
   }
 
-  @Get()
+  @Get() // localhost:4000/api/v1/customer
   findAll() {
     return this.customersService.findAll();
   }
 
-  @Get(':id')
+  @Get(':id') // localhost:4000/api/v1/customer/:id
   findOne(@Param('id') id: string) {
     return this.customersService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(
+  @Patch(':id') // localhost:4000/api/v1/customer/:id
+  async update(
     @Param('id') id: string,
     @Body() updateCustomerDto: UpdateCustomerDto,
   ) {
-    return this.customersService.update(+id, updateCustomerDto);
+    const customer = await this.customersService.update(+id, updateCustomerDto);
+    if (customer === 0) {
+      throw new BadRequestException(
+        `can't update data of customer with id ${id}`,
+      );
+    }
+    return { message: 'update completed' };
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.customersService.remove(+id);
+  @Delete(':id') // localhost:4000/api/v1/customer/:id
+  async remove(@Param('id') id: string) {
+    const customer = await this.customersService.remove(+id);
+    if (customer === 0) {
+      throw new NotFoundException(`not found customer with id ${id}`);
+    }
+    return { message: 'delete completed' };
   }
 }
