@@ -4,13 +4,16 @@ import { AuthService } from './auth.service';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from './entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
-  controllers: [AuthController],
-  providers: [AuthService],
   imports: [
+    PassportModule,
     SequelizeModule.forFeature([User]),
     JwtModule.register({ signOptions: { expiresIn: '7d' } }),
   ],
+  controllers: [AuthController],
+  providers: [AuthService, JwtStrategy],
 })
 export class AuthModule {}
